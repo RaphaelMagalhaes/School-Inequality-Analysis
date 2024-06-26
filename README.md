@@ -1,4 +1,7 @@
-# Dissertation
+# Private-Public Inequality Analysis in Brazil
+
+"What makes private schools perform better?"
+
 Analysis of public-private school inequality in Brazil conducted with PNADC and PISA.
 
 PISA 2018 data can be found here: (https://www.oecd.org/pisa/data/2018database/)

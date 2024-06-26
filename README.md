@@ -13,6 +13,7 @@ You can also download PNADC data using the R package made by IBGE (https://cran.
 -------------------------------------------------------------------------------------------------
 
 ICC calculations for 22 OECD and Latin America countries shows that Brazil has a heterogeneous school system and a not-so-high proficiency score. This is also true for the majority of the Latin America countries. When it comes to the OECD countries, there are different levels of ICC, suggesting homogeneous and heterogeneous systems, performing better than Latin America. There may be no correlation between school heterogeneity and performance.
+
 ![1 ICC1](https://github.com/RaphaelMagalhaes/School-Inequality-Analysis/assets/109918166/af21c620-857f-46fa-9b05-229877753fab)
 ![1 ICC2](https://github.com/RaphaelMagalhaes/School-Inequality-Analysis/assets/109918166/dc0ac7ef-ffbd-4842-98b4-8031cf993949)
 

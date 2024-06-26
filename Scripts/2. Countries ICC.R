@@ -14,7 +14,8 @@ pacman::p_load(tidyverse,
                lme4,
                performance,
                intsvy,
-               ggcorrplot)
+               ggcorrplot,
+               gt)
 
 
 # LOADING DATA -----------------------------------------------------------------
@@ -174,6 +175,23 @@ ggcorrplot(cor(icc[,2:7]),
 # the magnitude of the correlation is -0.47
 
 
+# plotting icc table
+icc %>%
+  gt() %>% 
+  tab_header(title = md("Country ICC and Mean Proficiency for each PISA major domain")) %>% 
+  tab_spanner(label = "Reading",
+              columns = c(icc.read, mean.read)) %>% 
+  tab_spanner(label = "Mathematics",
+              columns = c(icc.math, mean.math)) %>% 
+  tab_spanner(label = "Science",
+              columns = c(icc.scie, mean.scie)) %>% 
+  cols_label(CNT = "Country",
+             icc.read = "ICC",
+             icc.math = "ICC",
+             icc.scie = "ICC",
+             mean.read = "Mean",
+             mean.math = "Mean",
+             mean.scie = "Mean")
 
 # EXPORTING --------------------------------------------------------------------
 

@@ -166,7 +166,9 @@ ggcorrplot(cor(icc[,2:7]),
            p.mat = cor_pmat(icc[,2:7]),
            hc.order = T,
            lab = T,
-           insig = "blank")
+           insig = "blank",
+           title = "Correlation Plot - Country ICC and mean performance",
+           show.legend = F)
 
 # icc and performance are only statistic correlated in reading
 # the magnitude of the correlation is -0.47

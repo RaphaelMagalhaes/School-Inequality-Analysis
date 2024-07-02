@@ -8,15 +8,15 @@ options(scipen = 999)
 # loading packages
 if(!require("pacman")) install.packages("pacman")
 
-pacman::p_load(tidyverse,
-               janitor,
-               rio,
-               PNADcIBGE,
-               gt,
-               GDAtools,
-               paletteer,
-               Hmisc,
-               modelsummary)
+p_load(tidyverse,
+       janitor,
+       rio,
+       PNADcIBGE,
+       gt,
+       GDAtools,
+       paletteer,
+       Hmisc,
+       modelsummary)
 
 
 # LOADING DATA -----------------------------------------------------------------

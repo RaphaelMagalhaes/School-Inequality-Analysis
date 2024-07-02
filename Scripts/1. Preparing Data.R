@@ -8,9 +8,9 @@ options(scipen=999)
 # loading packages
 if (!require("pacman")) install.packages("pacman")
 
-pacman::p_load(tidyverse,
-               janitor,
-               rio)
+p_load(tidyverse,
+       janitor,
+       rio)
 
 
 # LOADING DATA -----------------------------------------------------------------

@@ -8,14 +8,14 @@ options(scipen=999)
 # loading packages
 if(!require("pacman")) install.packages("pacman")
 
-pacman::p_load(tidyverse,
-               janitor,
-               rio,
-               lme4,
-               performance,
-               intsvy,
-               ggcorrplot,
-               gt)
+p_load(tidyverse,
+       janitor,
+       rio,
+       lme4,
+       performance,
+       intsvy,
+       ggcorrplot,
+       gt)
 
 
 # LOADING DATA -----------------------------------------------------------------

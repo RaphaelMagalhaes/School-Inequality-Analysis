@@ -202,7 +202,7 @@ rm(decile.se,
    w)
 
 
-# EXAMINING PERFORMANCE PER SCHOOL TYPE ----------------------------------------
+# EXAMINING ESCS PER SCHOOL TYPE -----------------------------------------------
 
 # recoding school type
 pisa <- pisa %>% 
@@ -244,93 +244,88 @@ pisa %>%
   guides(fill = guide_legend(title = "School Type"))
 
 
--------------------------------------------------------
-  
-  CONTINUAR DAQUI
 
-# ASSOCIACAO ENTRE NSE E REDE ESCOLAR ------------------------------------------
+# deleting temporary data
+rm(escs.type)
 
-pisa.mean("ESCS",
-          data = pisa2018,
-          by = "SCHLTYPE") %>% 
-  mutate(SCHLTYPE = case_when(SCHLTYPE == 1 ~ "Privada",
-                              SCHLTYPE == 3 ~ "Pública"),
-         Mean = round(Mean, 2),
-         s.e. = round(s.e., 2),
-         SD = round(SD, 2),
-         s.e = round(s.e, 2)) %>% 
-  rename(`Rede Escolar` = SCHLTYPE,
-         `Média (EP)` = Mean,
-         `Desvio Padrão (EP)` = SD,
-         n = Freq) %>%
-  gt() %>% 
-  tab_header(title = md("**Média de NSE por tipo de escola**")) %>% 
-  tab_source_note(source = md("Fonte: Dados do PISA 2018. *Elaboração própria*.")) %>% 
-  cols_merge(columns = c(`Média (EP)`, s.e.),
-             pattern = "{1} ({2})") %>% 
-  cols_merge(columns = c(`Desvio Padrão (EP)`, s.e),
-             pattern = "{1} ({2})") %>% 
-  tab_footnote(footnote = md("*EP = Erro padrão*"),
-               locations = cells_column_labels(columns = `Média (EP)`))
 
-# PROFICIENCIA POR REDE ESCOLAR ------------------------------------------------
+# EXAMINING PERFORMANCE PER SCHOOL TYPE ----------------------------------------
 
-pisa.mean.pv(paste0("PV",1:10,"READ"),
-             data = pisa2018,
-             by = "SCHLTYPE") %>%  
-  rename(`Rede Escolar` = SCHLTYPE,
-         `Média (EP)` = Mean,
-         `Desvio Padrão (EP)` = SD,
-         n = Freq) %>% 
-  mutate(`Rede Escolar` = case_when(`Rede Escolar` == 1 ~ "Privada",
-                                    `Rede Escolar` == 3 ~ "Pública")) %>% 
-  gt() %>% 
-  tab_header(title = md("**Média de Leitura por REDE**")) %>% 
-  tab_source_note(source = md("Fonte: Dados do PISA 2018. *Elaboração própria*.")) %>% 
-  cols_merge(columns = c(`Média (EP)`, s.e.),
-             pattern = "{1} ({2})") %>% 
-  cols_merge(columns = c(`Desvio Padrão (EP)`, s.e),
-             pattern = "{1} ({2})") %>% 
-  tab_footnote(footnote = md("*EP = Erro padrão*"),
-               locations = cells_column_labels(columns = `Média (EP)`))
+# calculating mean performance for each PISA major domain
+# Reading
+type.score.read <- pisa.mean.pv(pvlabel = "READ",
+                                data = pisa,
+                                by = "SCHLTYPE") %>% 
+  select(SCHLTYPE, Mean, s.e.) %>% 
+  rename(read.mean = Mean,
+         read.se = s.e.) %>% 
+  drop_na()
 
-pisa.mean.pv(paste0("PV",1:10,"MATH"),
-             data = pisa2018,
-             by = "SCHLTYPE") %>%  
-  rename(`Rede Escolar` = SCHLTYPE,
-         `Média (EP)` = Mean,
-         `Desvio Padrão (EP)` = SD,
-         n = Freq) %>% 
-  mutate(`Rede Escolar` = case_when(`Rede Escolar` == 1 ~ "Privada",
-                                    `Rede Escolar` == 3 ~ "Pública")) %>% 
-  gt() %>% 
-  tab_header(title = md("**Média de Matemática por NSE**")) %>% 
-  tab_source_note(source = md("Fonte: Dados do PISA 2018. *Elaboração própria*.")) %>% 
-  cols_merge(columns = c(`Média (EP)`, s.e.),
-             pattern = "{1} ({2})") %>% 
-  cols_merge(columns = c(`Desvio Padrão (EP)`, s.e),
-             pattern = "{1} ({2})") %>% 
-  tab_footnote(footnote = md("*EP = Erro padrão*"),
-               locations = cells_column_labels(columns = `Média (EP)`))
+# Mathematics
+type.score.math <- pisa.mean.pv(pvlabel = "MATH",
+                                data = pisa,
+                                by = "SCHLTYPE") %>% 
+  select(SCHLTYPE, Mean, s.e.) %>% 
+  rename(math.mean = Mean,
+         math.se = s.e.) %>% 
+  drop_na()
 
-pisa.mean.pv(paste0("PV",1:10,"SCIE"),
-             data = pisa2018,
-             by = "SCHLTYPE") %>%  
-  rename(`Rede Escolar` = SCHLTYPE,
-         `Média (EP)` = Mean,
-         `Desvio Padrão (EP)` = SD,
-         n = Freq) %>% 
-  mutate(`Rede Escolar` = case_when(`Rede Escolar` == 1 ~ "Privada",
-                                    `Rede Escolar` == 3 ~ "Pública")) %>% 
-  gt() %>% 
-  tab_header(title = md("**Média de Ciências por NSE**")) %>% 
-  tab_source_note(source = md("Fonte: Dados do PISA 2018. *Elaboração própria*.")) %>% 
-  cols_merge(columns = c(`Média (EP)`, s.e.),
-             pattern = "{1} ({2})") %>% 
-  cols_merge(columns = c(`Desvio Padrão (EP)`, s.e),
-             pattern = "{1} ({2})") %>% 
-  tab_footnote(footnote = md("*EP = Erro padrão*"),
-               locations = cells_column_labels(columns = `Média (EP)`))
+# Sciences
+type.score.scie <- pisa.mean.pv(pvlabel = "SCIE",
+                                data = pisa,
+                                by = "SCHLTYPE") %>% 
+  select(SCHLTYPE, Mean, s.e.) %>% 
+  rename(scie.mean = Mean,
+         scie.se = s.e.) %>% 
+  drop_na()
+
+
+# joining tables
+type.score <- left_join(left_join(type.score.read, 
+                                  type.score.math),
+                        type.score.scie)
+
+
+# saving table
+export(type.score, "Results/8. School Type Proficiency.csv")
+
+# visualizing table
+gt(type.score) %>% 
+  tab_header(title = md("**Academic Performance per School Type**")) %>% 
+  tab_spanner(label = "Reading",
+              columns = c(read.mean, read.se)) %>% 
+  tab_spanner(label = "Mathematics",
+              columns = c(math.mean, math.se)) %>% 
+  tab_spanner(label = "Sciences",
+              columns = c(scie.mean, scie.se)) %>% 
+  cols_align(columns = SCHLTYPE,
+             align = "left") %>% 
+  cols_label(SCHLTYPE = "School Type",
+             read.mean = "Mean",
+             read.se = "SE",
+             math.mean = "Mean",
+             math.se = "SE",
+             scie.mean = "Mean",
+             scie.se = "SE") %>% 
+  tab_footnote(footnote = md("*SE = Standard Error*"),
+               locations = cells_column_labels(read.se))
+
+# graphically
+type.score %>% 
+  pivot_longer(cols = c(read.mean, math.mean, scie.mean),
+               values_to = "Mean",
+               names_to = "Area") %>% 
+  ggplot(aes(Area, Mean)) +
+  geom_col(aes(fill = SCHLTYPE),
+           position = "dodge") +
+  scale_fill_paletteer_d("nationalparkcolors::Acadia") +
+  guides(fill = guide_legend(title = "School Type")) +
+  labs(title = "Mean Proficiency per School Type",
+       x = "Major Area",
+       y = "Mean Score") +
+  scale_x_discrete(labels = c("Mathematics", "Reading", "Sciences")) +
+  theme_bw()
+
 
 # PROFICIENCIA POR REDE E POR NSE ----------------------------------------------
 

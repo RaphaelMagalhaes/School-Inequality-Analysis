@@ -327,6 +327,63 @@ type.score %>%
   theme_bw()
 
 
+# EXAMINING THE TRIPLE CORRELATION ---------------------------------------------
+
+# calculating by hand a correlation plot
+
+
+# ESCS - Performance correlation
+temp <- data.frame(pisa[,9:38],
+               ESCS = pisa$ESCS) %>% 
+  drop_na()
+
+escs.cor <- cor(temp) %>% 
+  as.data.frame() %>% 
+  select(ESCS) %>% 
+  filter(ESCS != 1)
+
+escs.cor <- escs.cor %>% 
+  mutate(ESCS = as.numeric(ESCS))
+
+escs.score.cor <- data.frame(Read = escs.cor[1:10,], 
+                             Math = escs.cor[11:20,], 
+                             Scie = escs.cor[21:30,]) %>% 
+  apply(2, mean) %>% 
+  round(.,2)
+
+
+# ESCS - School Type correlation
+temp <- data.frame(ESCS = pisa$ESCS,
+                   Type = as.numeric(pisa$SCHLTYPE)) %>% 
+  drop_na()
+
+escs.type.cor <- cor(temp) %>% 
+  as.data.frame() %>% 
+  select(ESCS) %>% 
+  filter(ESCS != 1) %>% 
+  round(.,2)
+
+# School Type - Performance correlation
+temp <- data.frame(pisa[,9:38],
+                   Type = as.numeric(pisa$SCHLTYPE)) %>% 
+  drop_na()
+
+type.score.cor <- cor(temp) %>% 
+  as.data.frame() %>% 
+  select(Type) %>% 
+  filter(Type != 1)
+
+type.score.cor <- data.frame(Read = type.score.cor[1:10,],
+                             Math = type.score.cor[11:20,],
+                             Scie = type.score.cor[21:30,]) %>% 
+  apply(2, mean) %>% 
+  round(.,2)
+
+
+# creating artificial correlation matrix and plot
+data.frame(Type = rbind(type.score.cor),
+           ESCS = escs.score.cor)
+
 # PROFICIENCIA POR REDE E POR NSE ----------------------------------------------
 
 pisapriv <- pisa2018 %>% 

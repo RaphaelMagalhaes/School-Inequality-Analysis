@@ -329,165 +329,104 @@ type.score %>%
 
 # EXAMINING THE TRIPLE CORRELATION ---------------------------------------------
 
-# separating databases
-pisa.priv <- pisa %>% 
-  filter(SCHLTYPE == "Private")
-
-pisa.pub <- pisa %>% 
-  filter(SCHLTYPE == "Public")
+# calculating by hand a correlation plot
 
 
-# calculating means per escs recile
+# ESCS - Performance correlation
+temp <- data.frame(pisa[,9:38],
+               ESCS = pisa$ESCS) %>% 
+  drop_na()
 
-## Private
-# Reading
-priv.mean.read <- pisa.mean.pv(pvlabel = "READ",
-                               pisa.priv,
-                               by = "ESCS.decile") %>% 
-  select(ESCS.decile, 
-         read.mean = Mean, 
-         read.se = s.e.) %>% 
-  drop_na(ESCS.decile)
-
-# Mathematics
-priv.mean.math <- pisa.mean.pv(pvlabel = "MATH",
-                               pisa.priv,
-                               by = "ESCS.decile") %>% 
-  select(ESCS.decile,
-         math.mean = Mean,
-         math.se = s.e.) %>% 
-  drop_na(ESCS.decile)
-
-# Science
-priv.mean.scie <- pisa.mean.pv(pvlabel = "SCIE",
-                               pisa.priv,
-                               by = "ESCS.decile") %>% 
-  select(ESCS.decile,
-         scie.mean = Mean,
-         scie.se = s.e.) %>% 
-  drop_na(ESCS.decile)
-
-
-## Public
-# Reading
-pub.mean.read <- pisa.mean.pv(pvlabel = "READ",
-                               pisa.pub,
-                               by = "ESCS.decile") %>% 
-  select(ESCS.decile, 
-         read.mean = Mean, 
-         read.se = s.e.) %>% 
-  drop_na(ESCS.decile)
-
-# Mathematics
-pub.mean.math <- pisa.mean.pv(pvlabel = "MATH",
-                               pisa.pub,
-                               by = "ESCS.decile") %>% 
-  select(ESCS.decile,
-         math.mean = Mean,
-         math.se = s.e.) %>% 
-  drop_na(ESCS.decile)
-
-# Science
-pub.mean.scie <- pisa.mean.pv(pvlabel = "SCIE",
-                               pisa.pub,
-                               by = "ESCS.decile") %>% 
-  select(ESCS.decile,
-         scie.mean = Mean,
-         scie.se = s.e.) %>% 
-  drop_na(ESCS.decile)
-
-
-
-# joining tables
-priv <- left_join(left_join(priv.mean.read,
-                            priv.mean.math),
-                  priv.mean.scie) %>% 
+escs.cor <- cor(temp) %>% 
   as.data.frame() %>% 
-  mutate(Type = "Private")
+  select(ESCS) %>% 
+  filter(ESCS != 1)
 
-pub <- left_join(left_join(pub.mean.read,
-                           pub.mean.math),
-                 pub.mean.scie) %>% 
+escs.cor <- escs.cor %>% 
+  mutate(ESCS = as.numeric(ESCS))
+
+escs.score.cor <- data.frame(Read = escs.cor[1:10,], 
+                             Math = escs.cor[11:20,], 
+                             Scie = escs.cor[21:30,]) %>% 
+  apply(2, mean) %>% 
+  round(.,2)
+
+
+# ESCS - School Type correlation
+temp <- data.frame(ESCS = pisa$ESCS,
+                   Type = as.numeric(pisa$SCHLTYPE)) %>% 
+  drop_na()
+
+escs.type.cor <- cor(temp) %>% 
   as.data.frame() %>% 
-  mutate(Type = "Public")
+  select(ESCS) %>% 
+  filter(ESCS != 1) %>% 
+  round(.,2)
+
+# School Type - Performance correlation
+temp <- data.frame(pisa[,9:38],
+                   Type = as.numeric(pisa$SCHLTYPE)) %>% 
+  drop_na()
+
+type.score.cor <- cor(temp) %>% 
+  as.data.frame() %>% 
+  select(Type) %>% 
+  filter(Type != 1)
+
+type.score.cor <- data.frame(Read = type.score.cor[1:10,],
+                             Math = type.score.cor[11:20,],
+                             Scie = type.score.cor[21:30,]) %>% 
+  apply(2, mean) %>% 
+  round(.,2)
 
 
-type.escs.score <- rbind(priv, pub)
+# creating artificial correlation matrix and plot
+data.frame(Type = rbind(type.score.cor),
+           ESCS = escs.score.cor)
+
+# PROFICIENCIA POR REDE E POR NSE ----------------------------------------------
+
+pisapriv <- pisa2018 %>% 
+  filter(SCHLTYPE == 1)
+
+pisapub <- pisa2018 %>% 
+  filter(SCHLTYPE == 3)
 
 
-# saving
-export(type.escs.score, "Results/9. Full descriptive correlation.csv")
+priv <- pisa.mean.pv(paste0("PV",1:10,"MATH"),
+                     data = pisapriv,
+                     by = "ESCSper")
 
+pub <-  pisa.mean.pv(paste0("PV",1:10,"MATH"),
+                     data = pisapub,
+                     by = "ESCSper")
 
-# visualizing table
-type.escs.score %>% 
-  pivot_wider(names_from = Type,
-              values_from = c(read.mean,
-                              read.se,
-                              math.mean,
-                              math.se,
-                              scie.mean,
-                              scie.se)) %>% 
-  mutate(ESCS.decile = factor(ESCS.decile,
-                              levels = 1:10,
-                              labels = c("0-10%",
-                                         "10-20%",
-                                         "20-30%",
-                                         "30-40%",
-                                         "40-50%",
-                                         "50-60%",
-                                         "60-70%",
-                                         "70-80%",
-                                         "80-90%",
-                                         "90-100%"))) %>% 
+full_join(priv,pub, by = "ESCSper") %>% 
+  select(ESCSper, 
+         Mean.x, s.e..x, SD.x, s.e.x,
+         Mean.y, s.e..y, SD.y, s.e.y) %>% 
   gt() %>% 
-  tab_header(title = md("**Academic Performance per 
-                        School Type and ESCS**")) %>% 
-  cols_merge(columns = c(read.mean_Private, read.se_Private),
+  tab_header(title = md("**Média de Matemática por Rede e por NSE**")) %>% 
+  cols_merge(columns = c(Mean.x, s.e..x),
              pattern = "{1} ({2})") %>% 
-  cols_merge(columns = c(read.mean_Public, read.se_Public),
+  cols_merge(columns = c(Mean.y, s.e..y),
              pattern = "{1} ({2})") %>% 
-  cols_merge(columns = c(math.mean_Private, math.se_Private),
-             pattern = "{1} ({2})") %>%
-  cols_merge(columns = c(math.mean_Public, math.se_Public),
+  cols_merge(columns = c(SD.x, s.e.x),
              pattern = "{1} ({2})") %>% 
-  cols_merge(columns = c(scie.mean_Private, scie.se_Private),
+  cols_merge(columns = c(SD.y, s.e.y),
              pattern = "{1} ({2})") %>% 
-  cols_merge(columns = c(scie.mean_Public, scie.se_Public),
-             pattern = "{1} ({2})") %>% 
-  data_color(columns = c(read.mean_Private,
-                         read.mean_Public,
-                         math.mean_Private,
-                         math.mean_Public,
-                         scie.mean_Private,
-                         scie.mean_Public),
-             scales::col_numeric(palette = "viridis",
-                                 domain = c(0,538))) %>% 
-  cols_align(columns = ESCS.decile,
-             align = "left") %>% 
-  tab_spanner(label = "Reading",
-              columns = c(read.mean_Private,
-                          read.mean_Public)) %>% 
-  tab_spanner(label = "Mathematics",
-              columns = c(math.mean_Private,
-                          math.mean_Public)) %>% 
-  tab_spanner(label = "Science",
-              columns = c(scie.mean_Private,
-                          scie.mean_Public)) %>% 
-  cols_label(ESCS.decile = "ESCS Decile",
-             read.mean_Private = "Private",
-             read.mean_Public = "Public",
-             math.mean_Private = "Private",
-             math.mean_Public = "Public",
-             scie.mean_Private = "Private",
-             scie.mean_Public = "Public") %>% 
-  cols_align(columns = c(read.mean_Private,
-                         read.mean_Public,
-                         math.mean_Private,
-                         math.mean_Public,
-                         scie.mean_Private,
-                         scie.mean_Public),
-             align = "center") %>% 
-  tab_footnote(footnote = md("*All values are in the format 'Mean (Standard Error)'*"))
-  
-  
+  tab_spanner(label = md("**Privada**"),
+              columns = c(Mean.x, SD.x)) %>% 
+  tab_spanner(label = md("**Pública**"),
+              columns = c(Mean.y, SD.y)) %>% 
+  tab_footnote(footnote = md("*EP = Erro padrão*"),
+               locations = cells_column_labels(Mean.x)) %>% 
+  tab_source_note(source = md("Fonte: Dados do PISA 2018. *Elaboração própria*.")) %>% 
+  cols_label(ESCSper = "Decil de NSE",
+             Mean.x = "Média (EP)",
+             SD.x = "Desvio Padrão (EP)",
+             Mean.y = "Média (EP)",
+             SD.y = "Desvio Padrão (EP)")
+
+
+

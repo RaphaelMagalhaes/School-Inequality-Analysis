@@ -187,7 +187,8 @@ escs.proficiency %>%
        x = "ESCS Decile",
        y = "Mean Score") +
   scale_y_continuous(limits=c(0,600)) +
-  scale_color_paletteer_d("nbapalettes::bulls_holiday")
+  scale_color_paletteer_d("nbapalettes::bulls_holiday",
+                          labels = c("Mathematics", "Reading", "Sciences"))
 
 # deleting temporary files
 rm(decile.se,
@@ -234,12 +235,13 @@ gt(escs.type) %>%
 # graphically
 pisa %>% 
   drop_na(SCHLTYPE) %>% 
-  ggplot(aes(ESCS, after_stat(count))) +
+  ggplot(aes(ESCS, after_stat(count), weight = W_FSTUWT)) +
   geom_density(aes(fill = SCHLTYPE),
-               position = "stack") +
+               show.legend = F) +
+  facet_grid(rows = vars(SCHLTYPE)) +
   scale_fill_paletteer_d("nationalparkcolors::Acadia") +
   theme_bw() +
-  labs(title = "ESCS Distribution per School Type (Stacked)",
+  labs(title = "ESCS Distribution per School Type",
        y = "Frequency") +
   guides(fill = guide_legend(title = "School Type"))
 
@@ -326,6 +328,250 @@ type.score %>%
   scale_x_discrete(labels = c("Mathematics", "Reading", "Sciences")) +
   theme_bw()
 
+# deleting temporary data
+rm(type.score,
+   type.score.math,
+   type.score.read,
+   type.score.scie)
 
 # EXAMINING THE TRIPLE CORRELATION ---------------------------------------------
 
+# splitting data frames between public and private
+pisa.pub <- pisa %>% 
+  filter(SCHLTYPE == "Public")
+
+pisa.priv <- pisa %>% 
+  filter(SCHLTYPE == "Private")
+
+
+# calculating mean performance per ESCS decile in each sub dataset
+
+## Public
+# Reading
+pub.read.score <- pisa.mean.pv(pvlabel = "READ",
+                               data = pisa.pub,
+                               by = "ESCS.decile") %>% 
+  select(ESCS.decile, 
+         pub.read.mean = Mean, 
+         pub.read.se = s.e.) %>% 
+  drop_na()
+
+# Mathematics
+pub.math.score <- pisa.mean.pv(pvlabel = "MATH",
+                               data = pisa.pub,
+                               by = "ESCS.decile") %>% 
+  select(ESCS.decile, 
+         pub.math.mean = Mean, 
+         pub.math.se = s.e.) %>% 
+  drop_na()
+
+# Sciences
+pub.scie.score <- pisa.mean.pv(pvlabel = "SCIE",
+                               data = pisa.pub,
+                               by = "ESCS.decile") %>% 
+  select(ESCS.decile, 
+         pub.scie.mean = Mean, 
+         pub.scie.se = s.e.) %>% 
+  drop_na()
+
+
+## Private
+# Reading
+priv.read.score <- pisa.mean.pv(pvlabel = "READ",
+                                data = pisa.priv,
+                                by = "ESCS.decile") %>% 
+  select(ESCS.decile, 
+         priv.read.mean = Mean, 
+         priv.read.se = s.e.) %>% 
+  drop_na()
+
+# Mathematics
+priv.math.score <- pisa.mean.pv(pvlabel = "MATH",
+                                data = pisa.priv,
+                                by = "ESCS.decile") %>% 
+  select(ESCS.decile, 
+         priv.math.mean = Mean, 
+         priv.math.se = s.e.) %>% 
+  drop_na()
+
+# Sciences
+priv.scie.score <- pisa.mean.pv(pvlabel = "SCIE",
+                                data = pisa.priv,
+                                by = "ESCS.decile") %>% 
+  select(ESCS.decile, 
+         priv.scie.mean = Mean, 
+         priv.scie.se = s.e.) %>% 
+  drop_na()
+
+
+## Joining tables
+
+# Publics
+pub.escs.score <- left_join(left_join(pub.read.score,
+                                      pub.math.score),
+                            pub.scie.score)
+
+# Privates
+priv.escs.score <- left_join(left_join(priv.read.score,
+                                       priv.math.score),
+                             priv.scie.score)
+
+# All
+type.escs.score <- left_join(pub.escs.score, priv.escs.score)
+
+
+# saving
+export(type.escs.score, 
+       "Results/9. Background-Type-Proficiency correlation.csv")
+
+# visualizing table
+type.escs.score %>% 
+  mutate(ESCS.decile = factor(ESCS.decile,
+                              levels = 1:10,
+                              labels = c("0-10%",
+                                         "10-20%",
+                                         "20-30%",
+                                         "30-40%",
+                                         "40-50%",
+                                         "50-60%",
+                                         "60-70%",
+                                         "70-80%",
+                                         "80-90%",
+                                         "90-100%"))) %>% 
+  gt() %>% 
+  tab_header(title = md("**Academic Performance per 
+                        School Type and ESCS**")) %>%
+  cols_merge(columns = c(pub.read.mean,
+                         pub.read.se),
+             pattern = "{1} ({2})") %>% 
+  cols_merge(columns = c(pub.math.mean,
+                         pub.math.se),
+             pattern = "{1} ({2})") %>%
+  cols_merge(columns = c(pub.scie.mean,
+                         pub.scie.se),
+             pattern = "{1} ({2})") %>% 
+  cols_merge(columns = c(priv.read.mean,
+                         priv.read.se),
+             pattern = "{1} ({2})") %>% 
+  cols_merge(columns = c(priv.math.mean,
+                         priv.math.se),
+             pattern = "{1} ({2})") %>%
+  cols_merge(columns = c(priv.scie.mean,
+                         priv.scie.se),
+             pattern = "{1} ({2})") %>% 
+  tab_spanner(label = "Reading",
+              columns = c(pub.read.mean,
+                          priv.read.mean)) %>% 
+  tab_spanner(label = "Mathematics",
+              columns = c(pub.math.mean,
+                          priv.math.mean)) %>% 
+  tab_spanner(label = "Sciences",
+              columns = c(pub.scie.mean,
+                          priv.scie.mean)) %>% 
+  cols_label(ESCS.decile = "ESCS Decile",
+             pub.read.mean = "Public",
+             pub.math.mean = "Public",
+             pub.scie.mean = "Public",
+             priv.read.mean = "Private",
+             priv.math.mean = "Private",
+             priv.scie.mean = "Private") %>% 
+  data_color(columns = c(pub.read.mean,
+                         pub.math.mean,
+                         pub.scie.mean,
+                         priv.read.mean,
+                         priv.math.mean,
+                         priv.scie.mean),
+             colors = scales::col_numeric(palette = "viridis",
+                                          domain = c(0,538))) %>% 
+  cols_align(columns = ESCS.decile,
+             align = "left") %>% 
+  cols_align(columns = c(pub.read.mean,
+                         pub.math.mean,
+                         pub.scie.mean,
+                         priv.read.mean,
+                         priv.math.mean,
+                         priv.scie.mean),
+             align = "center") %>% 
+  fmt_missing(missing_text = "--") %>% 
+  tab_footnote(footnote = md("*There is no student in the sample attending
+                             in Private Schools that are also in the '0-10%'
+                             decile*"),
+               locations = cells_body(columns = c(priv.read.mean,
+                                                  priv.math.mean,
+                                                  priv.scie.mean),
+                                      rows = 1)) %>% 
+  tab_footnote(footnote = md("*Proficiency values are all in the 
+                             format 'Mean (Standard Error)'*"),
+               locations = cells_title())
+
+
+## Graphically
+# Treating mean values
+mean.TES <- type.escs.score %>% 
+  select(ESCS.decile, ends_with("mean")) %>% 
+  pivot_longer(cols = c(pub.read.mean,
+                        pub.math.mean,
+                        pub.scie.mean,
+                        priv.read.mean,
+                        priv.math.mean,
+                        priv.scie.mean),
+               values_to = "Mean",
+               names_to = "name") %>% 
+  mutate(Type = ifelse(startsWith(name, "pub"), "Public", "Private"),
+         Area = rep(c("Reading", "Mathematics", "Science"),
+                    20)) %>% 
+  select(!name) %>% 
+  drop_na()
+
+# Treating Standard Error values
+se.TES <- type.escs.score %>% 
+  select(ESCS.decile, ends_with("se")) %>% 
+  pivot_longer(cols = c(pub.read.se,
+                        pub.math.se,
+                        pub.scie.se,
+                        priv.read.se,
+                        priv.math.se,
+                        priv.scie.se),
+               values_to = "se",
+               names_to = "name") %>% 
+  mutate(Type = ifelse(startsWith(name, "pub"), "Public", "Private"),
+         Area = rep(c("Reading", "Mathematics", "Science"),
+                    20)) %>% 
+  select(!name) %>% 
+  drop_na()
+
+
+# joining
+TES <- left_join(mean.TES, se.TES) %>% # TES = type escs score
+  mutate(ESCS.decile = factor(ESCS.decile,
+                              levels = 1:10,
+                              labels = c("0-10%",
+                                         "10-20%",
+                                         "20-30%",
+                                         "30-40%",
+                                         "40-50%",
+                                         "50-60%",
+                                         "60-70%",
+                                         "70-80%",
+                                         "80-90%",
+                                         "90-100%"))) %>% 
+  rename(`School Type` = Type)
+
+
+# creating the plot
+ggplot(TES, aes(ESCS.decile, Mean)) +
+  geom_point(aes(group = `School Type`,
+                 color = `School Type`)) +
+  geom_errorbar(aes(ymin = Mean-(2*se),
+                    ymax = Mean+(2*se),
+                    color = `School Type`),
+                width = .3) +
+  geom_line(aes(group = `School Type`,
+                color = `School Type`)) +
+  facet_grid(rows = vars(Area)) +
+  theme_bw() + 
+  scale_color_paletteer_d("nbapalettes::bulls_holiday") +
+  labs(title = "Academic Performance per School Type and ESCS",
+       y = "Mean Proficiency",
+       x = "ESCS Decile") +
+  guides(fill = guide_legend(title = "School Type"))

@@ -17,7 +17,7 @@ p_load(tidyverse,
 
 # LOADING AND PREPARING DATA ---------------------------------------------------
 
-pisa <- import("Dados/pisa_oecd.csv")
+pisa <- import("Data/pisa_oecd.csv")
 
 # selecting Brazillian sample of non immigrants 
 pisa <- pisa %>% 
@@ -67,7 +67,7 @@ pisa <- pisa %>%
                             ref = "Public"))
 
 # saving
-export(pisa, "Dados/pisa_bra.csv")
+export(pisa, "Data/pisa_bra.csv")
 
 
 # NULL MODELS ------------------------------------------------------------------

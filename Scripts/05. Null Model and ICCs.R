@@ -17,7 +17,7 @@ p_load(tidyverse,
 
 # LOADING AND PREPARING DATA ---------------------------------------------------
 
-pisa <- import("Dados/pisa_oecd.csv")
+pisa <- import("Data/pisa_oecd.csv")
 
 # selecting Brazillian sample of non immigrants 
 pisa <- pisa %>% 
@@ -67,7 +67,7 @@ pisa <- pisa %>%
                             ref = "Public"))
 
 # saving
-export(pisa, "Dados/pisa_bra.csv")
+export(pisa, "Data/pisa_bra.csv")
 
 
 # NULL MODELS ------------------------------------------------------------------
@@ -483,7 +483,7 @@ rm(fwscie,
 fe <- rbind(fe.read.null,
             fe.math.null,
             fe.scie.null)
-export(fe, "Documentação/fixed_effects_null.csv")
+export(fe, "Results/10. Fixed Effects in Null Model.csv")
 
 # graphically
 fe %>% 
@@ -511,7 +511,7 @@ icc.null <- data.frame(Area = c("Reading",
                        ICC = c(icc.read.null,
                                icc.math.null,
                                icc.scie.null))
-export(icc.null, "Documentação/icc.null.csv")
+export(icc.null, "Results/11. ICC Estimation in Null Model.csv")
 
 # graphically
 icc.null %>% 

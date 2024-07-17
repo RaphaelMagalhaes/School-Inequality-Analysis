@@ -17,7 +17,7 @@ p_load(tidyverse,
 
 # LOADING AND PREPARING DATA ---------------------------------------------------
 
-pisa <- import("Dados/pisa_bra.csv")
+pisa <- import("Data/pisa_bra.csv")
 
 # recoding categorical variables
 pisa <- pisa %>% 
@@ -467,7 +467,7 @@ rm(fwscie,
 fe <- rbind(fe.read.m4,
             fe.math.m4,
             fe.scie.m4)
-export(fe, "Documentação/fixed_effects_m4.csv")
+export(fe, "Results/fixed_effects_m4.csv")
 
 # graphically
 fe.graph <- left_join(left_join(fe.read.m4, 
@@ -521,7 +521,7 @@ icc.m4 <- data.frame(Area = c("Reading",
                        ICC = c(icc.read.m4,
                                icc.math.m4,
                                icc.scie.m4))
-export(icc.m4, "Documentação/icc.m4.csv")
+export(icc.m4, "Results/icc.m4.csv")
 
 # graphically
 icc.m4 %>% 

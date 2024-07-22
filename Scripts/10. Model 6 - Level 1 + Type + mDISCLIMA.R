@@ -467,7 +467,7 @@ rm(fwscie,
 fe <- rbind(fe.read.m6,
             fe.math.m6,
             fe.scie.m6)
-export(fe, "Results/fixed_effects_m6.csv")
+export(fe, "Results/25. Fixed Effects in Model 6.csv")
 
 # graphically
 fe.graph <- left_join(left_join(fe.read.m6, 
@@ -521,7 +521,7 @@ icc.m6 <- data.frame(Area = c("Reading",
                      ICC = c(icc.read.m6,
                              icc.math.m6,
                              icc.scie.m6))
-export(icc.m6, "Results/icc.m6.csv")
+export(icc.m6, "Results/26. ICC in Model 6.csv")
 
 # graphically
 icc.m6 %>% 
@@ -535,6 +535,7 @@ icc.m6 %>%
 re.m6 <- rbind(re.read.m6,
                re.math.m6,
                re.scie.m6)
+export(re.m6, "Results/27. Random Effects in Model 6.csv")
 
 sch.type <- pisa %>% 
   group_by(CNTSCHID) %>% 

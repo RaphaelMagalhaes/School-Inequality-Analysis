@@ -525,6 +525,7 @@ icc.null %>%
 re.null <- rbind(re.read.null,
                  re.math.null,
                  re.scie.null)
+export(re.null, "Results/12. Random Effects in Null Model.csv")
 
 sch.type <- pisa %>% 
   group_by(CNTSCHID) %>% 

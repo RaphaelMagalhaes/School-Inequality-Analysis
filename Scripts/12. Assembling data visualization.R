@@ -126,7 +126,7 @@ fe %>%
 # ICC --------------------------------------------------------------------------
 
 ## Loading data ----
-icc.null <- import("Results/11. ICC in null model.csv")
+icc.null <- import("Results/11. ICC estimation in null model.csv")
 icc.m2 <- import("Results/14. ICC in Model 2.csv")
 icc.m3 <- import("Results/17. ICC in Model 3.csv")
 icc.m4 <- import("Results/20. ICC in Model 4.csv")
@@ -246,31 +246,31 @@ left_join(re, sch.type) %>%
   mutate(model = factor(model,
                         levels = 1:7,
                         labels = c("Null",
-                                   "Modelo 2",
-                                   "Modelo 3",
-                                   "Modelo 4",
-                                   "Modelo 5",
-                                   "Modelo 6",
-                                   "Modelo 7")),
+                                   "Model 2",
+                                   "Model 3",
+                                   "Model 4",
+                                   "Model 5",
+                                   "Model 6",
+                                   "Model 7")),
          area = case_when(area == "Reading" ~ 1,
                           area == "Mathematics" ~ 2,
                           area == "Sciences" ~ 3),
          area = factor(area,
                        levels = 1:3,
-                       labels = c("Leitura",
-                                  "Mathemática",
-                                  "Ciências"))) %>% 
+                       labels = c("Reading",
+                                  "Mathematics",
+                                  "Sciences"))) %>% 
   ggplot(aes(condval, school)) +
   geom_errorbarh(aes(xmin=condval-2*condsd,
                      xmax=condval+2*condsd),
                  alpha = .3) +
   geom_point(aes(color = Type)) +
   theme_bw() +
-  scale_y_discrete(name = "Escolas",
+  scale_y_discrete(name = "Schools",
                    labels = " ",
                    breaks = NULL) +
-  scale_x_continuous(name = "Efeitos Aleatórios",
+  scale_x_continuous(name = "Random Effects",
                      limits = c(-250,250)) +
   facet_grid(rows = vars(factor(model)),
              cols = vars(factor(area))) +
-  scale_color_manual(values =c("darkred", "darkblue"))
+  scale_color_paletteer_d("fishualize::Acanthurus_leucosternon")

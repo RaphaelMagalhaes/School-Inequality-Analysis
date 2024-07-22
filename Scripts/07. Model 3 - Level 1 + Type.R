@@ -17,7 +17,7 @@ p_load(tidyverse,
 
 # LOADING AND PREPARING DATA ---------------------------------------------------
 
-pisa <- import("Dados/pisa_bra.csv")
+pisa <- import("Data/pisa_bra.csv")
 
 # recoding categorical variables
 pisa <- pisa %>% 
@@ -467,7 +467,7 @@ rm(fwscie,
 fe <- rbind(fe.read.m3,
             fe.math.m3,
             fe.scie.m3)
-export(fe, "Documentação/fixed_effects_m3.csv")
+export(fe, "Results/16. Fixed Effects in Model 3.csv")
 
 # graphically
 fe.graph <- left_join(left_join(fe.read.m3, 
@@ -521,7 +521,7 @@ icc.m3 <- data.frame(Area = c("Reading",
                        ICC = c(icc.read.m3,
                                icc.math.m3,
                                icc.scie.m3))
-export(icc.m3, "Documentação/icc.m3.csv")
+export(icc.m3, "Results/17. ICC in Model 3.csv")
 
 # graphically
 icc.m3 %>% 
@@ -535,6 +535,7 @@ icc.m3 %>%
 re.m3 <- rbind(re.read.m3,
                re.math.m3,
                re.scie.m3)
+export(re.m3, "Results/18. Random Effects in Model 3.csv")
 
 sch.type <- pisa %>% 
   group_by(CNTSCHID) %>% 

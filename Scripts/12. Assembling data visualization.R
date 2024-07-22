@@ -17,12 +17,12 @@ p_load(tidyverse,
 
 ## Loading data ----
 fe.null <- import("Results/10. Fixed Effects in Null Model.csv")
-fe.m2 <- import("Results/12. Fixed Effects in Model 2.csv")
-fe.m3 <- import("Results/14. Fixed Effects in Model 3.csv")
-fe.m4 <- import("Results/16. Fixed Effects in Model 4.csv")
-fe.m5 <- import("Results/18. Fixed Effects in Model 5.csv")
-fe.m6 <- import("Results/20. Fixed Effects in Model 6.csv")
-fe.m7 <- import("Results/22. Fixed Effects in Model 7.csv")
+fe.m2 <- import("Results/13. Fixed Effects in Model 2.csv")
+fe.m3 <- import("Results/16. Fixed Effects in Model 3.csv")
+fe.m4 <- import("Results/19. Fixed Effects in Model 4.csv")
+fe.m5 <- import("Results/22. Fixed Effects in Model 5.csv")
+fe.m6 <- import("Results/25. Fixed Effects in Model 6.csv")
+fe.m7 <- import("Results/28. Fixed Effects in Model 7.csv")
 
 ## Joining data ----
 
@@ -126,13 +126,13 @@ fe %>%
 # ICC --------------------------------------------------------------------------
 
 ## Loading data ----
-icc.null <- import("Results/11. ICC estimation in null model.csv")
-icc.m2 <- import("Results/13. ICC Estimation in Model 2.csv")
-icc.m3 <- import("Results/15. ICC estimation in Model 3.csv")
-icc.m4 <- import("Results/17. ICC in Model 4.csv")
-icc.m5 <- import("Results/19. ICC in Model 5.csv")
-icc.m6 <- import("Results/21. ICC in Model 6.csv")
-icc.m7 <- import("Results/23. ICC in Model 7.csv")
+icc.null <- import("Results/11. ICC in null model.csv")
+icc.m2 <- import("Results/14. ICC in Model 2.csv")
+icc.m3 <- import("Results/17. ICC in Model 3.csv")
+icc.m4 <- import("Results/20. ICC in Model 4.csv")
+icc.m5 <- import("Results/23. ICC in Model 5.csv")
+icc.m6 <- import("Results/26. ICC in Model 6.csv")
+icc.m7 <- import("Results/29. ICC in Model 7.csv")
 
 
 ## Joining data ----
@@ -168,7 +168,7 @@ icc <- rbind(icc.null,
              icc.m7)
 
 
-# Visualizing
+## Visualizing ----
 icc %>% 
   mutate(ICC = round(ICC, 2)) %>% 
   pivot_wider(names_from = Area,
@@ -181,3 +181,96 @@ icc %>%
   data_color(columns = c(Reading, Mathematics, Sciences),
              colors = scales::col_numeric(palette = "viridis",
                                       domain = c(.13,.45)))
+
+
+# RANDOM EFFECTS  --------------------------------------------------------------
+
+## Loading data ----
+re.null <- import("Results/12. Random Effects in Null Model.csv")
+re.m2 <- import("Results/15. Random Effects in Model 2.csv")
+re.m3 <- import("Results/18. Random Effects in Model 3.csv")
+re.m4 <- import("Results/21. Random Effects in Model 4.csv")
+re.m5 <- import("Results/24. Random Effects in Model 5.csv")
+re.m6 <- import("Results/27. Random Effects in Model 6.csv")
+re.m7 <- import("Results/30. Random Effects in Model 7.csv")
+
+
+## Joining data ----
+# identifying models
+re.null <- re.null %>% 
+  mutate(model = 1)
+
+re.m2 <- re.m2 %>% 
+  mutate(model = 2)
+
+re.m3 <- re.m3 %>% 
+  mutate(model = 3)
+
+re.m4 <- re.m4 %>% 
+  mutate(model = 4)
+
+re.m5 <- re.m5 %>% 
+  mutate(model = 5)
+
+re.m6 <- re.m6 %>% 
+  mutate(model = 6)
+
+re.m7 <- re.m7 %>% 
+  mutate(model = 7)
+
+# Binding all
+re <- rbind(re.null,
+            re.m2,
+            re.m3,
+            re.m4,
+            re.m5,
+            re.m6,
+            re.m7)
+
+## Visualizing ----
+# importing pisa dataset
+pisa <- import("Data/pisa_bra.csv")
+
+# creating schooltype dataset
+sch.type <- pisa %>% 
+  group_by(CNTSCHID) %>% 
+  summarise(Type = unique(SCHLTYPE)) %>% 
+  ungroup() %>% 
+  mutate(Type = case_when(Type == "Public" ~ "Public",
+                          Type == "PrivateInd" ~ "Private",
+                          Type == "PrivateDep" ~ "Private")) %>% 
+  rename("school" = CNTSCHID)
+
+
+left_join(re, sch.type) %>% 
+  mutate(model = factor(model,
+                        levels = 1:7,
+                        labels = c("Null",
+                                   "Modelo 2",
+                                   "Modelo 3",
+                                   "Modelo 4",
+                                   "Modelo 5",
+                                   "Modelo 6",
+                                   "Modelo 7")),
+         area = case_when(area == "Reading" ~ 1,
+                          area == "Mathematics" ~ 2,
+                          area == "Sciences" ~ 3),
+         area = factor(area,
+                       levels = 1:3,
+                       labels = c("Leitura",
+                                  "Mathemática",
+                                  "Ciências"))) %>% 
+  ggplot(aes(condval, school)) +
+  geom_errorbarh(aes(xmin=condval-2*condsd,
+                     xmax=condval+2*condsd),
+                 alpha = .3) +
+  geom_point(aes(color = Type)) +
+  theme_bw() +
+  scale_y_discrete(name = "Escolas",
+                   labels = " ",
+                   breaks = NULL) +
+  scale_x_continuous(name = "Efeitos Aleatórios",
+                     limits = c(-250,250)) +
+  facet_grid(rows = vars(factor(model)),
+             cols = vars(factor(area))) +
+  scale_color_manual(values =c("darkred", "darkblue"))

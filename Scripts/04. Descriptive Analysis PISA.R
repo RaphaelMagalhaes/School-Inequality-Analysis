@@ -242,8 +242,7 @@ pisa %>%
   scale_fill_paletteer_d("nationalparkcolors::Acadia") +
   theme_bw() +
   labs(title = "ESCS Distribution per School Type",
-       y = "Frequency") +
-  guides(fill = guide_legend(title = "School Type"))
+       y = "Frequency")
 
 
 
